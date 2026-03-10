@@ -1565,27 +1565,32 @@
             document.getElementById('introScreen').classList.remove('hidden');
         }
         
-        // Tooltip system - works with dynamic content and handles scrolling
+        // Tooltip system - CRITICAL FIX: Show popup BEFORE measuring height
         const popup = document.getElementById('tooltipPopup');
         
         document.addEventListener('click', function(e) {
-            const tooltipTrigger = e.target.closest('.help-tooltip');
+            const trigger = e.target.closest('.help-tooltip');
             
-            if (tooltipTrigger) {
+            if (trigger) {
                 e.stopPropagation();
-                
-                const text = tooltipTrigger.getAttribute('data-tooltip');
+                const text = trigger.getAttribute('data-tooltip');
                 popup.textContent = text;
+                
+                // 1. Show it first so we can measure it correctly
                 popup.classList.add('show');
                 
-                // Position calculation with scroll offset
-                const rect = tooltipTrigger.getBoundingClientRect();
+                // 2. Calculate position (now offsetHeight is accurate)
+                const rect = trigger.getBoundingClientRect();
                 const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 
-                // Center the popup horizontally over the '?' and place it above
-                popup.style.left = (rect.left + scrollLeft + (rect.width / 2) - 140) + 'px';
-                popup.style.top = (rect.top + scrollTop - popup.offsetHeight - 15) + 'px';
+                // Center horizontally (140 = half of 280px width)
+                const leftPos = rect.left + scrollLeft + (rect.width / 2) - 140;
+                // Position above with buffer (offsetHeight + 15px)
+                const topPos = rect.top + scrollTop - popup.offsetHeight - 15;
+                
+                popup.style.left = leftPos + 'px';
+                popup.style.top = topPos + 'px';
             } else {
                 popup.classList.remove('show');
             }
