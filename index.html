@@ -428,47 +428,34 @@
             margin-left: 8px;
             position: relative;
             transition: all 0.3s ease;
+            user-select: none;
         }
         
         .help-tooltip:hover {
             background: #5568d3;
-            transform: scale(1.1);
         }
         
-        .help-tooltip-content {
+        .tooltip-popup {
             display: none;
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed;
             background: #333;
             color: white;
             padding: 12px 15px;
             border-radius: 8px;
             font-size: 0.9em;
             width: 280px;
-            margin-bottom: 8px;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             line-height: 1.4;
+            pointer-events: none;
         }
         
-        .help-tooltip-content::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 6px solid transparent;
-            border-top-color: #333;
-        }
-        
-        .help-tooltip.active .help-tooltip-content {
+        .tooltip-popup.show {
             display: block;
         }
         
         @media (max-width: 600px) {
-            .help-tooltip-content {
+            .tooltip-popup {
                 width: 200px;
                 font-size: 0.85em;
             }
@@ -561,9 +548,7 @@
                             <div class="input-group">
                                 <label for="warrantA">
                                     What is Person A's primary warrant?
-                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
-                                        <span class="help-tooltip-content">What moral principle/foundation makes their position feel obviously right to them?</span>
-                                    </span>
+                                    <span class="help-tooltip" data-tooltip="What moral principle/foundation makes their position feel obviously right to them?">?</span>
                                 </label>
                                 <select id="warrantA">
                                     <option value="">-- Select warrant --</option>
@@ -578,9 +563,7 @@
                             <div class="input-group">
                                 <label for="warrantB">
                                     What is Person B's primary warrant?
-                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
-                                        <span class="help-tooltip-content">What moral principle/foundation makes their position feel obviously right to them?</span>
-                                    </span>
+                                    <span class="help-tooltip" data-tooltip="What moral principle/foundation makes their position feel obviously right to them?">?</span>
                                 </label>
                                 <select id="warrantB">
                                     <option value="">-- Select warrant --</option>
@@ -612,9 +595,7 @@
                             <div class="input-group">
                                 <label for="sharedTask">
                                     Step 1: Identify Shared Constructor Task
-                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
-                                        <span class="help-tooltip-content">What outcome do BOTH people want, even if they have different reasons for wanting it?</span>
-                                    </span>
+                                    <span class="help-tooltip" data-tooltip="What outcome do BOTH people want, even if they have different reasons for wanting it?">?</span>
                                 </label>
                                 <textarea id="sharedTask" placeholder="What do both people want to accomplish? State in outcome terms, not process terms..."></textarea>
                             </div>
@@ -624,9 +605,7 @@
                             <div class="input-group">
                                 <label for="coordinationStrategy">
                                     Step 3: Design OS2 Coordination Strategy
-                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
-                                        <span class="help-tooltip-content">How should they divide the work based on what each person's PRF makes them good at?</span>
-                                    </span>
+                                    <span class="help-tooltip" data-tooltip="How should they divide the work based on what each person's PRF makes them good at?">?</span>
                                 </label>
                                 <textarea id="coordinationStrategy" placeholder="How should they divide responsibilities based on their PRF-enabled capabilities? Remember: no agreement on warrants required!"></textarea>
                             </div>
@@ -700,6 +679,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- Global tooltip popup -->
+    <div id="tooltipPopup" class="tooltip-popup"></div>
     
     <script>
         // State
@@ -1583,32 +1565,42 @@
             document.getElementById('introScreen').classList.remove('hidden');
         }
         
-        // Tooltip toggle function
-        function toggleTooltip(element, evt) {
-            // Stop propagation to prevent immediate close
-            if (evt) {
-                evt.stopPropagation();
-            }
+        // Tooltip system - simple and robust
+        (function() {
+            const popup = document.getElementById('tooltipPopup');
+            let currentTooltip = null;
             
-            // Close all other tooltips first
-            document.querySelectorAll('.help-tooltip.active').forEach(tooltip => {
-                if (tooltip !== element) {
-                    tooltip.classList.remove('active');
+            // Handle tooltip clicks
+            document.addEventListener('click', function(e) {
+                const tooltip = e.target.closest('.help-tooltip');
+                
+                if (tooltip) {
+                    e.stopPropagation();
+                    
+                    // Toggle tooltip
+                    if (currentTooltip === tooltip) {
+                        popup.classList.remove('show');
+                        currentTooltip = null;
+                    } else {
+                        // Show new tooltip
+                        const text = tooltip.getAttribute('data-tooltip');
+                        popup.textContent = text;
+                        
+                        // Position near the tooltip
+                        const rect = tooltip.getBoundingClientRect();
+                        popup.style.left = (rect.left + rect.width / 2 - 140) + 'px';
+                        popup.style.top = (rect.top - popup.offsetHeight - 10) + 'px';
+                        
+                        popup.classList.add('show');
+                        currentTooltip = tooltip;
+                    }
+                } else {
+                    // Click outside - close tooltip
+                    popup.classList.remove('show');
+                    currentTooltip = null;
                 }
             });
-            
-            // Toggle this tooltip
-            element.classList.toggle('active');
-        }
-        
-        // Close tooltips when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.help-tooltip')) {
-                document.querySelectorAll('.help-tooltip.active').forEach(tooltip => {
-                    tooltip.classList.remove('active');
-                });
-            }
-        });
+        })();
     </script>
 </body>
 </html>
