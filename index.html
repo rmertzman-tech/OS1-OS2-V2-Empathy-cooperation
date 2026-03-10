@@ -561,7 +561,7 @@
                             <div class="input-group">
                                 <label for="warrantA">
                                     What is Person A's primary warrant?
-                                    <span class="help-tooltip" onclick="toggleTooltip(this)">?
+                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
                                         <span class="help-tooltip-content">What moral principle/foundation makes their position feel obviously right to them?</span>
                                     </span>
                                 </label>
@@ -578,7 +578,7 @@
                             <div class="input-group">
                                 <label for="warrantB">
                                     What is Person B's primary warrant?
-                                    <span class="help-tooltip" onclick="toggleTooltip(this)">?
+                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
                                         <span class="help-tooltip-content">What moral principle/foundation makes their position feel obviously right to them?</span>
                                     </span>
                                 </label>
@@ -612,7 +612,7 @@
                             <div class="input-group">
                                 <label for="sharedTask">
                                     Step 1: Identify Shared Constructor Task
-                                    <span class="help-tooltip" onclick="toggleTooltip(this)">?
+                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
                                         <span class="help-tooltip-content">What outcome do BOTH people want, even if they have different reasons for wanting it?</span>
                                     </span>
                                 </label>
@@ -624,7 +624,7 @@
                             <div class="input-group">
                                 <label for="coordinationStrategy">
                                     Step 3: Design OS2 Coordination Strategy
-                                    <span class="help-tooltip" onclick="toggleTooltip(this)">?
+                                    <span class="help-tooltip" onclick="toggleTooltip(this, event)">?
                                         <span class="help-tooltip-content">How should they divide the work based on what each person's PRF makes them good at?</span>
                                     </span>
                                 </label>
@@ -1584,7 +1584,12 @@
         }
         
         // Tooltip toggle function
-        function toggleTooltip(element) {
+        function toggleTooltip(element, evt) {
+            // Stop propagation to prevent immediate close
+            if (evt) {
+                evt.stopPropagation();
+            }
+            
             // Close all other tooltips first
             document.querySelectorAll('.help-tooltip.active').forEach(tooltip => {
                 if (tooltip !== element) {
@@ -1594,9 +1599,6 @@
             
             // Toggle this tooltip
             element.classList.toggle('active');
-            
-            // Stop propagation to prevent immediate close
-            event.stopPropagation();
         }
         
         // Close tooltips when clicking outside
